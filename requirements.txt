@@ -1,0 +1,4 @@
+ipython
+psycopg2-binary
+typer
+python-dateutil

@@ -1,0 +1,70 @@
+version: '3'
+
+volumes:
+  pg_admin_data:
+  pg_production_data:
+  pg_warehouse_data:
+
+
+services:
+  data_tools:
+    build:
+      context: .
+    volumes:
+      - .:/opt/app
+      - ./exports:/exports
+    command: tail -f /dev/null
+    depends_on:
+      production_data:
+        condition: service_healthy
+      warehouse_data:
+        condition: service_healthy
+    links:
+      - production_data
+      - warehouse_data
+
+
+  # DB
+  production_data:
+    image: bitnami/postgresql:14.3.0
+    environment:
+      POSTGRES_PASSWORD: production_data_pwd
+      POSTGRES_USER: production_data_user
+      POSTGRES_DB: production_data_db
+    volumes:
+      - pg_production_data:/var/lib/postgresql/data
+      - ./docker/production_data/initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U production_data_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  warehouse_data:
+    image: bitnami/postgresql:14.3.0
+    environment:
+      POSTGRES_PASSWORD: warehouse_data_pwd
+      POSTGRES_USER: warehouse_data_user
+      POSTGRES_DB: warehouse_data_db
+    volumes:
+      - pg_warehouse_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U warehouse_data_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # PG Admin
+  pg_admin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pwd
+      - PGADMIN_CONFIG_SERVER_MODE=True
+    ports:
+      - "4300:80"
+    depends_on:
+      - production_data
+      - warehouse_data
+    volumes:
+      - pg_admin_data:/var/lib/pgadmin
+      - ./docker/pg_admin/servers.json:/pgadmin4/servers.json

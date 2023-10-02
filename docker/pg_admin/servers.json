@@ -1,0 +1,22 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Production database",
+            "Group": "Padam hr test",
+            "Host": "localhost",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer"
+        },
+        "2": {
+            "Name": "Warehouse database",
+            "Group": "Padam hr test",
+            "Host": "localhost",
+            "Port": 5432,
+            "MaintenanceDB": "postgre",
+            "Username": "postgres",
+            "SSLMode": "prefer"
+        }
+    }
+}
